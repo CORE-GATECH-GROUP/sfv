@@ -1,0 +1,4 @@
+wheel
+setuptools
+numpy>=1.7
+scipy

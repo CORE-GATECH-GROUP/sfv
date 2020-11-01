@@ -1,0 +1,68 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module _sfv ! in 
+    interface  ! in :_sfv
+        module sfvmod ! in :_sfv:lib/sfv.f95
+            integer, parameter,optional :: dp=kind(1.d0)
+            real(kind=8), private,parameter,optional :: unity=1.0_dp
+            integer, public,parameter,optional :: sfv_v_major=0
+            integer, public,parameter,optional :: sfv_v_minor=3
+            integer, public,parameter,optional,dimension(2),depend(sfv_v_major,sfv_v_minor) :: sfv_v=(/sfv_v_major, sfv_v_minor/)
+            subroutine predict_spatial_flux(nMat,nMode,abs0,abs1,nsf0,nsf1,keff0,keff1,adjFxMom,fwdFxMom,eigW,phi0) ! in :_sfv:lib/sfv.f95:sfvmod
+                integer, optional,intent(hide),depend(abs0) :: nMat=len(abs0)
+                integer, optional,intent(hide),depend(eigW) :: nMode=len(eigW)
+                real(kind=dp) dimension(nMat),intent(in) :: abs0
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: abs1
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: nsf0
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: nsf1
+                real(kind=dp) intent(in) :: keff0
+                real(kind=dp), optional,intent(in) :: keff1
+                real(kind=dp) dimension(nMat,nMode),intent(in),depend(nMat,nMode) :: adjFxMom
+                real(kind=dp) dimension(nMat,nMode),intent(in),depend(nMat,nMode) :: fwdFxMom
+                real(kind=dp) dimension(nMode),intent(in) :: eigW
+                real(kind=dp) dimension(nMat),intent(inout),depend(nMat) :: phi0
+            end subroutine predict_spatial_flux
+            subroutine get_dsig(nMat,sig0,sig1,work) ! in :_sfv:lib/sfv.f95:sfvmod
+                integer, optional,intent(in),check(len(sig0)>=nMat),depend(sig0) :: nMat=len(sig0)
+                real(kind=dp) dimension(nMat),intent(in) :: sig0
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: sig1
+                real(kind=dp) dimension(nMat),intent(out),depend(nMat) :: work
+            end subroutine get_dsig
+            subroutine rho_term(nMat,fluxProd,sig1,dsig,work) ! in :_sfv:lib/sfv.f95:sfvmod
+                integer, optional,intent(in),check(len(fluxProd)>=nMat),depend(fluxProd) :: nMat=len(fluxProd)
+                real(kind=dp) dimension(nMat),intent(in) :: fluxProd
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: sig1
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: dsig
+                real(kind=dp) dimension(nMat),intent(out),depend(nMat) :: work
+            end subroutine rho_term
+            subroutine compute_delta_lambda_fopt(nMat,invkeff,fluxProd,abs1,dsiga,nsf1,dnsf,deltaLambda) ! in :_sfv:lib/sfv.f95:sfvmod
+                integer, optional,intent(in),check(len(fluxProd)>=nMat),depend(fluxProd) :: nMat=len(fluxProd)
+                real(kind=dp) intent(in) :: invkeff
+                real(kind=dp) dimension(nMat),intent(in) :: fluxProd
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: abs1
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: dsiga
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: nsf1
+                real(kind=dp) dimension(nMat),intent(in),depend(nMat) :: dnsf
+                real(kind=dp) intent(out) :: deltaLambda
+            end subroutine compute_delta_lambda_fopt
+            subroutine get_expansion_coeffs(nMats,nModes,fwdFlx0,adjFlx0,inv_keff0,dsiga,nsf0,dnsf,deltaLambda,eig0,phi0,expCoeffs) ! in :_sfv:lib/sfv.f95:sfvmod
+                integer, optional,intent(in),check(shape(fwdFlx0,0)==nMats),depend(fwdFlx0) :: nMats=shape(fwdFlx0,0)
+                integer, optional,intent(in),check(shape(fwdFlx0,1)==nModes),depend(fwdFlx0) :: nModes=shape(fwdFlx0,1)
+                real(kind=dp) dimension(nMats,nModes),intent(in) :: fwdFlx0
+                real(kind=dp) dimension(nMats,nModes),intent(in),depend(nMats,nModes) :: adjFlx0
+                real(kind=dp) intent(in) :: inv_keff0
+                real(kind=dp) dimension(nMats),intent(in),depend(nMats) :: dsiga
+                real(kind=dp) dimension(nMats),intent(in),depend(nMats) :: nsf0
+                real(kind=dp) dimension(nMats),intent(in),depend(nMats) :: dnsf
+                real(kind=dp) intent(in) :: deltaLambda
+                real(kind=dp) dimension(nModes),intent(in),depend(nModes) :: eig0
+                real(kind=dp) dimension(nMats),intent(in),depend(nMats) :: phi0
+                real(kind=dp) dimension(nModes - 1),intent(out),depend(nModes) :: expCoeffs
+            end subroutine get_expansion_coeffs
+        end module sfvmod
+    end interface 
+end python module _sfv
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
